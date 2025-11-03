@@ -1,176 +1,476 @@
-
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>CIE-297 | Monitoreo en Tiempo Real</title>
-<link rel="icon" href="assets/logo.png"/>
+<link rel="icon" href="assets/logo.png" />
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+
 <style>
-  :root{ --bg:#0b1424;--card:#101b31;--soft:#12213b;--text:#e5ecff;--muted:#93a4c7;
-         --ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;--line:rgba(255,255,255,.06); }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;font:14px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:var(--bg)}
-  .container{max-width:1200px;margin:0 auto;padding:16px}
-  .appbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#0b1424;position:sticky;top:0;z-index:40;border-bottom:1px solid var(--line)}
-  .brand{display:flex;gap:.6rem;align-items:center;font-weight:800;font-size:18px}
-  .brand img{height:32px;width:32px;border-radius:6px}
-  .actions{display:flex;gap:.5rem;align-items:center}
-  .btn{cursor:pointer;border:1px solid var(--line);background:var(--soft);color:var(--text);padding:.5rem .8rem;border-radius:.6rem}
-  .btn:hover{filter:brightness(1.1)} .btn-danger{background:#2b1220;border-color:#ff6b6b;color:#ff9aa9} .btn-secondary{background:#1c2437}
-  .badge{display:inline-block;padding:.1rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-  .grid{display:grid;gap:16px} .g-2{grid-template-columns:2fr 1fr}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px} .card h3{margin:.2rem 0 10px 0}
-  .row{display:flex;gap:10px;align-items:center} .col{display:flex;flex-direction:column;gap:6px}
-  .control{width:100%;background:#0f1a30;border:1px solid var(--line);color:var(--text);padding:.55rem .6rem;border-radius:8px}
-  .table-wrap{overflow:auto;border:1px dashed var(--line);border-radius:10px;margin-top:8px}
-  table{width:100%;border-collapse:collapse} th,td{padding:.55rem .6rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-  thead th{background:#0f1a2e;color:#c7d3ff;font-weight:700} .muted{color:var(--muted)} .right{display:flex;justify-content:flex-end}
-  .hidden{display:none !important}
-  .chip{display:inline-block;padding:.2rem .6rem;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,.15);letter-spacing:.5px}
-  .chip--alta{background:#3b0d0d;border-color:var(--danger);color:#ff6b6b}
-  .chip--media{background:#3a3000;border-color:var(--warn);color:#ffd166}
-  .chip--baja{background:#062b0b;border-color:var(--ok);color:#86efac}
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
-  .modal .box{width:420px;max-width:92vw;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-  .title{font-weight:800;margin:0 0 8px 0}
-  @media (max-width:980px){ .g-2{grid-template-columns:1fr} }
+:root{
+  --bg:#0b1424;--card:#101b31;--soft:#12213b;--text:#e5ecff;--muted:#93a4c7;
+  --ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;--line:rgba(255,255,255,.08);
+  --chip:#152238;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:14px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:var(--bg)}
+a{color:#8ab4ff;text-decoration:none}
+.container{max-width:1280px;margin:0 auto;padding:16px}
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#0b1424;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:.75rem;align-items:center;font-weight:700;font-size:18px}
+.brand img{width:32px;height:32px;border-radius:8px}
+.actions{display:flex;gap:.5rem;align-items:center}
+.btn{border:1px solid var(--line);background:var(--soft);color:var(--text);padding:.55rem .8rem;border-radius:.6rem}
+.btn:hover{filter:brightness(1.04)}
+.btn-danger{background:#2b1020;border-color:#ff6b6b;color:#ff9aa9}
+.btn-ghost{background:transparent;border-color:var(--line)}
+.btn-primary{background:#1e3a8a;border-color:#3256c7;color:#e6edff}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:2fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 10px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.control{width:100%;background:#0b1424;border:1px solid var(--line);border-radius:10px;padding:.6rem;color:var(--text)}
+.select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7aa2ff 50%),linear-gradient(135deg,#7aa2ff 50%,transparent 50%);background-position:calc(100% - 18px) calc(1em + 2px),calc(100% - 13px) calc(1em + 2px);background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:40px}
+table{width:100%;border-collapse:separate;border-spacing:0 8px}
+th,td{padding:.55rem .6rem;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-size:.9rem}
+td{color:#dbe8ff}
+.badge{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.badge-dot{width:8px;height:8px;border-radius:99px;background:#6aa0ff}
+/* Chips */
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{display:inline-block;padding:.35rem .65rem;border-radius:999px;font-weight:700;border:1px solid var(--line);letter-spacing:.2px;background:var(--chip);color:#cfe2ff}
+.chip-media{background:#3a3000;color:var(--warn);border-color:rgba(255,200,0,.25)}
+.chip-baja{background:#07280f;color:#a0f3b8;border-color:rgba(34,197,94,.25)}
+.chip-alta{background:#2a0c0f;color:#ff8fa0;border-color:rgba(239,68,68,.25)}
+/* Right alerts list */
+.alerts-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding-right:6px}
+.alert{border:1px solid var(--line);background:#0f1a2e;border-radius:12px;padding:.7rem .8rem}
+.alert .top{display:flex;align-items:center;gap:.6rem}
+.alert .title{font-weight:700;margin-top:.35rem}
+.alert small{color:var(--muted)}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:5000} /* <- aumentado */
+.modal.open{display:flex}
+.sheet{width:min(980px,92vw);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;z-index:6000;position:relative} /* <- z-index alto */
+/* Login sheet smaller */
+.sheet-sm{width:min(820px,92vw)}
+/* Sticky right column tools */
+.tools .btn{width:100%;justify-content:center}
+/* Footer */
+footer{color:#a2b7dc;text-align:center;padding:24px 0;opacity:.85}
+/* Hide app before auth */
+#app{display:none}
 </style>
-<script>
-  const API=(window.CIE297_API||'').replace(/\/+$/,''); const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
-  const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); const authHeaders=()=>({'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('token')||'')});
-  function fmtDateTime(iso){const d=new Date(iso);const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2),hh=('0'+d.getHours()).slice(-2),mm=('0'+d.getMinutes()).slice(-2),ss=('0'+d.getSeconds()).slice(-2);return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;}
-  function chipNivel(n){n=(n||'').toUpperCase();const e=document.createElement('span');e.className='chip '+(n==='ALTA'?'chip--alta':n==='BAJA'?'chip--baja':'chip--media');e.textContent=n;return e;}
-  async function apiLogin(email,password){const r=await fetch(API+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});const j=await r.json();if(!r.ok)throw new Error(j?.message||'Error login');localStorage.setItem('token',j.token);window._me=j.user;window._isAdmin=!!j.user?.is_admin;return j;}
-  async function apiMe(){const r=await fetch(API+'/api/me',{headers:authHeaders()});if(!r.ok)return null;const j=await r.json();window._me=j.user;window._isAdmin=!!j.user?.is_admin;return j.user;}
-  async function apiCreateAccount(p){const r=await fetch(API+'/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const j=await r.json();if(!r.ok)throw new Error(j?.message||'Error registrar');return j;}
-  async function apiSendReport(p){const r=await fetch(API+'/api/reports',{method:'POST',headers:authHeaders(),body:JSON.stringify(p)});const j=await r.json();if(!r.ok)throw new Error(j?.message||'Error enviar');return j;}
-  async function apiGetAlerts(limit=10){const r=await fetch(API+`/api/admin/alerts?limit=${limit}`,{headers:authHeaders()});const j=await r.json();if(!r.ok)throw new Error(j?.message||'Error listar');return j.items||[];}
-  function render(v){qsa('[data-view]').forEach(e=>e.classList.add('hidden'));qs(`[data-view="${v}"]`).classList.remove('hidden');if(v==='dashboard'||v==='admin'){qs('#btnLogout').classList.remove('hidden')}else{qs('#btnLogout').classList.add('hidden')}qs('#hello').textContent=window._me?(' | '+(window._me.grado||'')+' '+(window._me.nombres||'')) : '';}
-  function openLogin(){qs('#loginModal').style.display='flex';qs('#loginEmail').focus()} function closeLogin(){qs('#loginModal').style.display='none'}
-  async function doLogin(){try{await apiLogin(qs('#loginEmail').value.trim(),qs('#loginPass').value.trim());closeLogin();if(window._isAdmin){initAdmin();render('admin')}else{initUser();render('dashboard')}}catch(e){alert(e.message)}}
-  async function createAccount(){const p={grado:qs('#grado').value,especialidad:qs('#especialidad').value.trim(),nombres:qs('#nombres').value.trim(),apellidos:qs('#apellidos').value.trim(),email:qs('#email').value.trim(),password:qs('#password').value.trim()};try{await apiCreateAccount(p);alert('Usuario creado. Inicia sesión.')}catch(e){alert(e.message)}}
-  function paintLatest(sel,items){const tb=qs(sel);tb.innerHTML='';(items||[]).forEach(it=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${it.id??''}</td><td>${fmtDateTime(it.fecha||it.created_at)}</td><td data-chip></td><td>${esc(it.tipo||'')}</td><td>${esc(it.usuario||'')}</td><td>${(it.lat!=null&&it.lng!=null)?((+it.lat).toFixed(4)+', '+(+it.lng).toFixed(4)) : ''}</td><td>${esc(it.descripcion||'')}</td>`;tr.querySelector('[data-chip]').appendChild(chipNivel(it.nivel));tb.appendChild(tr)})}
-  async function refreshLatest(){const it=await apiGetAlerts(10);paintLatest('#listLatest',it)} async function refreshAdmin(){const it=await apiGetAlerts(10);paintLatest('#adminLatest',it)}
-  function nivelAleatorio(){const n=['ALTA','MEDIA','BAJA'],p=[0.25,0.5,0.25];let r=Math.random(),a=0;for(let i=0;i<n.length;i++){a+=p[i];if(r<=a)return n[i]}return'’MEDIA’'}
-  function startSim(){stopSim();window._sim=setInterval(async()=>{try{const nivel=nivelAleatorio();const tipos=['SIMULADO','OBSERVACION','INTERFERENCIA','MOVIMIENTO','OTROS'];const tipo=tipos[Math.floor(Math.random()*tipos.length)];const lat=-16.6+Math.random(),lng=-68.2+Math.random();const descripcion=nivel==='ALTA'?'Evento crítico (simulado)':nivel==='BAJA'?'Notificación menor (simulado)':'Actividad observada (simulado)';await apiSendReport({tipo,nivel,descripcion,lat,lng,sim:true});if(window._isAdmin)refreshAdmin();else refreshLatest()}catch(e){}},5000)}
-  function stopSim(){if(window._sim){clearInterval(window._sim);window._sim=null}}
-  async function sendQuick(){const tipo=qs('#tipo').value,nivel=qs('#nivel').value,msg=qs('#mensaje').value||'',libre=qs('#descripcion').value||'';const descripcion=msg?`[${msg}] ${libre}`:libre;let lat=qs('#lat').value?+qs('#lat').value:null,lng=qs('#lng').value?+qs('#lng').value:null;try{await apiSendReport({tipo,nivel,descripcion,lat,lng});alert('Reporte enviado');qs('#descripcion').value='';if(window._isAdmin)refreshAdmin();else refreshLatest()}catch(e){alert(e.message)}}
-  function useLocation(){if(!navigator.geolocation)return alert('Geolocalización no soportada');navigator.geolocation.getCurrentPosition(p=>{qs('#lat').value=p.coords.latitude.toFixed(6);qs('#lng').value=p.coords.longitude.toFixed(6)},()=>alert('No se pudo obtener ubicación'),{enableHighAccuracy:true,timeout:7000})}
-  async function initUser(){startSim();await refreshLatest()} async function initAdmin(){startSim();await refreshAdmin()}
-  function logout(){localStorage.removeItem('token');window._me=null;window._isAdmin=false;stopSim();render('landing')}
-  async function verTodas(){const r=await fetch(API+'/api/admin/alerts?limit=2000',{headers:authHeaders()});const j=await r.json();const items=(j.items||[]).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));const g=items.reduce((a,it)=>{const d=new Date(it.fecha||it.created_at);const k=`${d.getFullYear()}-${('0'+(d.getMonth()+1)).slice(-2)}-${('0'+d.getDate()).slice(-2)}`;(a[k]||(a[k]=[])).push(it);return a},{});const days=Object.keys(g).sort().reverse();const pnl=qs('#panelTodas');pnl.classList.remove('hidden');pnl.innerHTML=days.map(day=>{const rows=g[day].map(it=>`<tr><td>${it.id??''}</td><td>${fmtDateTime(it.fecha||it.created_at)}</td><td>${esc(it.nivel||'')}</td><td>${esc(it.tipo||'')}</td><td>${esc(it.usuario||'')}</td><td>${(it.lat!=null&&it.lng!=null)?((+it.lat).toFixed(4)+', '+(+it.lng).toFixed(4)) : ''}</td><td>${esc(it.descripcion||'')}</td></tr>`).join('');return `<div class="row" style="justify-content:space-between;align-items:center;margin:6px 0"><div class="title">Reportes del ${day}</div><div class="row" style="gap:6px"><button class="btn btn-secondary" data-exp-pdf="${day}">Exportar PDF</button><button class="btn" data-exp-csv="${day}">Exportar CSV</button></div></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Tipo</th><th>Usuario</th><th>Ubicación</th><th>Descripción</th></tr></thead><tbody>${rows}</tbody></table></div>`}).join('')}
-  async function onExport(ev){const pdf=ev.target.closest('[data-exp-pdf]'),csv=ev.target.closest('[data-exp-csv]');if(!pdf&&!csv)return;const day=(pdf&&pdf.dataset.expPdf)||(csv&&csv.dataset.expCsv);const base=pdf?'/api/admin/alerts/export/pdf':'/api/admin/alerts/export/csv';const url=`${API}${base}?date=${encodeURIComponent(day)}`;const r=await fetch(url,{headers:authHeaders()});const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pdf?`reporte_${day}.pdf`:`reporte_${day}.csv`;a.click();URL.revokeObjectURL(a.href)}
-  window.addEventListener('DOMContentLoaded',async()=>{qs('#btnOpenLogin').addEventListener('click',openLogin);qs('#btnCloseLogin').addEventListener('click',closeLogin);qs('#btnLogin').addEventListener('click',doLogin);qs('#btnCreate').addEventListener('click',createAccount);qs('#btnSend').addEventListener('click',sendQuick);qs('#btnUseLocation').addEventListener('click',useLocation);qs('#btnLogout').addEventListener('click',logout);qs('#btnVerTodas').addEventListener('click',verTodas);qs('#panelTodas').addEventListener('click',onExport);const me=await apiMe();if(me){if(window._isAdmin){initAdmin();render('admin')}else{initUser();render('dashboard')}}else{render('landing')}setInterval(()=>{if(window._isAdmin)refreshAdmin();else refreshLatest()},15000)});
-</script>
 </head>
 <body>
 <header class="appbar">
   <div class="brand">
-    <img src="assets/logo.png" alt="logo">
-    <span>CIE-297 | Monitoreo en Tiempo Real <span id="hello" class="muted"></span></span>
+    <img src="assets/logo.png" alt="logo" onerror="this.style.opacity=.25;this.alt='CIE-297'">
+    <div>CIE-297 | Monitoreo en Tiempo Real</div>
   </div>
   <div class="actions">
-    <button id="btnLogout" class="btn btn-danger hidden">Cerrar sesión</button>
+    <button class="btn btn-primary" id="btnOpenLogin">Iniciar sesión</button>
+    <button class="btn btn-ghost" id="btnLogout" style="display:none">Cerrar sesión</button>
   </div>
 </header>
-<div class="container">
 
-  <section class="card" data-view="landing">
-    <h3>Registro</h3>
-    <div class="grid" style="grid-template-columns:1fr auto">
-      <div class="col">
+<main class="container">
+  <div id="app">
+    <div class="grid g2">
+      <section class="card">
+        <h3>Área Operativa</h3>
+        <div id="map" class="card" style="height:360px;display:flex;align-items:center;justify-content:center;color:#7c99c9;border-style:dashed">
+          <small>Mapa (tu integración existente)</small>
+        </div>
+
+        <div class="chips" style="margin-top:10px">
+          <span class="chip chip-baja"><span class="badge-dot" style="background:#22c55e"></span> BAJA</span>
+          <span class="chip chip-media"><span class="badge-dot" style="background:#f59e0b"></span> MEDIA</span>
+          <span class="chip chip-alta"><span class="badge-dot" style="background:#ef4444"></span> ALTA</span>
+        </div>
+
+        <div class="card" style="margin-top:14px;max-width:560px">
+          <h3>Misiones / Reportes rápidos</h3>
+          <div class="row">
+            <div style="flex:1">
+              <small style="color:var(--muted)">Tipo</small>
+              <select id="rptTipo" class="control select">
+                <option>Operativo en zona</option>
+                <option>Incautación de autos</option>
+                <option>Rebasado</option>
+              </select>
+            </div>
+            <div style="width:160px">
+              <small style="color:var(--muted)">Nivel</small>
+              <select id="rptNivel" class="control select">
+                <option>BAJA</option><option>MEDIA</option><option>ALTA</option>
+              </select>
+            </div>
+            <div>
+              <small style="color:var(--muted)">Ubicación</small><br/>
+              <button class="btn" id="btnUbic">Usar ubicación</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <small style="color:var(--muted)">Mensaje</small>
+              <select id="rptMsg" class="control select">
+                <option>PETA</option><option>LAMBO</option><option>TRICICLO</option><option>PATINETA</option>
+                <option>FRUTAS</option><option>MOTOBOMBA</option><option>CUCHARA</option><option>TENEDOR</option>
+                <option>CHISGUETE</option>
+                <option>PINTURA ROJA</option><option>PINTURA NARANJA</option><option>PINTURA AZUL</option>
+                <option>PINTURA VERDE</option><option>PINTURA AMARILLA</option><option>PINTURA CAFE</option>
+                <option>YENAS</option><option>LOBOS</option><option>LIEBRES</option><option>JUGANDO</option>
+                <option>RIO PILCOMAYO</option><option>LAGUNA ESCOBAR</option><option>MALLASA</option><option>CIELO NUBLADO</option>
+                <option>HOTEL RADISSON</option><option>HERRADURA</option><option>FEDERAL</option><option>CAIMAN</option><option>LAGARTOS</option>
+              </select>
+            </div>
+            <div style="width:160px">
+              <small style="color:var(--muted)">Lat</small>
+              <input id="rptLat" class="control" placeholder="lat">
+            </div>
+            <div style="width:160px">
+              <small style="color:var(--muted)">Lng</small>
+              <input id="rptLng" class="control" placeholder="lng">
+            </div>
+          </div>
+          <div style="margin-top:8px">
+            <small style="color:var(--muted)">Descripción</small>
+            <textarea id="rptDesc" class="control" rows="3" placeholder="Detallar lo ocurrido..."></textarea>
+          </div>
+          <div style="text-align:right;margin-top:8px">
+            <button class="btn btn-primary" id="btnEnviar">Enviar</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h3>Órganos de búsqueda</h3>
+        <div class="row" style="margin-bottom:6px">
+          <div class="badge"><strong style="opacity:.85">Código indicativo del lugar</strong></div>
+          <select id="ddLugar" class="control select">
+            <option>HAWAI</option><option>CUBA</option><option>BEIRUT</option><option>LOMAS</option>
+          </select>
+        </div>
+        <div class="row" style="margin-bottom:6px">
+          <div class="badge"><strong style="opacity:.85">Código indicativo de canales</strong></div>
+          <select id="ddCanal" class="control select">
+            <option>BLANCO</option><option>ROJO</option><option>AZUL</option><option>AMARILLO</option><option>VERDE</option>
+            <option>ROSADO</option><option>GUINDO</option><option>CARMESI</option><option>NEGRO</option><option>KAKI</option>
+            <option>MARRON</option><option>TURQUESA</option><option>CELESTE</option><option>NARANJA</option><option>PURPURA</option><option>GRIS</option>
+          </select>
+        </div>
         <div class="row">
-          <select id="grado" class="control" style="max-width:200px">
-            <option value="">Grado</option>
-            <option>GRAL</option><option>CNL</option><option>TCNL</option><option>MY</option><option>CAP</option><option>TTE</option><option>SBTTE</option><option>SGTO</option><option>CBOS</option>
-          </select>
-          <input id="especialidad" placeholder="Especialidad" class="control" style="flex:1">
-        </div>
-        <div class="row"><input id="nombres" placeholder="Nombres" class="control" style="flex:1"><input id="apellidos" placeholder="Apellidos" class="control" style="flex:1"></div>
-        <div class="row"><input id="email" placeholder="Email" class="control" style="flex:1"><input id="password" type="password" placeholder="Contraseña" class="control" style="flex:1"></div>
-        <div class="right"><button id="btnCreate" class="btn">Crear cuenta</button></div>
-      </div>
-      <div class="right" style="align-items:flex-start"><button id="btnOpenLogin" class="btn btn-secondary" style="height:40px;margin-top:4px">Iniciar sesión</button></div>
-    </div>
-    <p class="muted">© CIE-297 · Prototipo académico · Tiempo real</p>
-  </section>
-
-  <section class="grid g-2 hidden" data-view="dashboard">
-    <div class="card">
-      <h3>Área Operativa</h3>
-      <div class="table-wrap" style="height:320px;display:flex;align-items:center;justify-content:center;border-style:dashed">
-        <div class="muted">Mapa (Leaflet) — Bolivia</div>
-      </div>
-      <div class="muted" style="margin-top:6px">Leyenda: <span class="chip chip--baja">BAJA</span> <span class="chip chip--media">MEDIA</span> <span class="chip chip--alta">ALTA</span></div>
-    </div>
-    <aside class="card"><h3>Órganos de búsqueda</h3><div class="muted">Se listan con claves IEC-SAT (simulado)</div></aside>
-
-    <div class="card" style="grid-column:1 / -1">
-      <h3>Misiones / Reportes rápidos</h3>
-      <div class="grid" style="grid-template-columns:1fr 1fr">
-        <div class="col">
-          <label>Tipo</label>
-          <select id="tipo" class="control">
-            <option>Rebasado</option><option>Relocalización</option><option>Interferencia RF</option><option>Observación</option><option>Incautación de autos</option><option>Secuestro</option><option>Otros</option>
+          <div class="badge"><strong style="opacity:.85">Código indicativo de llamadas</strong></div>
+          <select id="ddLlamada" class="control select">
+            <option>ZEUS</option><option>ARIES</option><option>VIRGO</option><option>SAGITARIO</option>
+            <option>LIBRA</option><option>CAPRICORNIO</option><option>GEMINIS</option><option>ESCORPIO</option>
+            <option>TAURO</option><option>CANCER</option><option>LEO</option><option>PISCIS</option>
           </select>
         </div>
-        <div class="col">
-          <label>Nivel</label>
-          <select id="nivel" class="control"><option>ALTA</option><option selected>MEDIA</option><option>BAJA</option></select>
+
+        <div class="row" style="margin-top:14px">
+          <button class="btn" id="btnVerTodas" style="flex:1">Ver todas</button>
+          <button class="btn" id="btnExportar" style="flex:1">Exportar PDF</button>
+          <button class="btn" id="btnAccesos" style="flex:1">Accesos</button>
         </div>
-        <div class="col">
-          <label>Mensaje</label>
-          <select id="mensaje" class="control">
-            <option value="">— seleccionar —</option>
-            <option>PETA</option><option>LAMBO</option><option>TRICICLO</option><option>PATINETA</option>
-            <option>FRUTAS</option><option>MOTOBOMBA</option><option>CUCHARA</option><option>TENEDOR</option>
-            <option>CHISGUETE</option><option>PINTURA ROJA</option><option>PINTURA NARANJA</option>
-            <option>PINTURA AZUL</option><option>PINTURA VERDE</option><option>PINTURA AMARILLA</option><option>PINTURA CAFE</option>
-            <option>YENAS</option><option>LOBOS</option><option>LIEBRES</option><option>JUGANDO</option>
-            <option>RIO PILCOMAYO</option><option>LAGUNA ESCOBAR</option><option>MALLASA</option><option>CIELO NUBLADO</option>
-            <option>HOTEL RADISSON</option><option>HERRADURA</option><option>FEDERAL</option><option>CAIMAN</option><option>LAGARTOS</option>
+
+        <h3 style="margin-top:14px">Alertas</h3>
+        <div class="alerts-list" id="alertsCol"></div>
+      </aside>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <h3>Alertas (10 más recientes)</h3>
+      <table id="tablaRecientes">
+        <thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+</main>
+
+<footer>© CIE-297 — Prototipo académico</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal" id="mLogin">
+  <div class="sheet sheet-sm">
+    <h3>Acceso</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <h4 style="margin:.25rem 0">Registro</h4>
+        <div style="margin:.5rem 0">
+          <small style="color:var(--muted)">Grado</small>
+          <select id="rgGrado" class="control select">
+            <option>SLDO</option><option>SGT</option><option>SOF</option><option>SBTTE</option><option>TTE</option><option>CAP</option>
+            <option>MY</option><option>TCNL</option><option>CNL</option><option>GRAL</option>
           </select>
         </div>
-        <div class="col">
-          <label>Ubicación</label>
-          <div class="row"><input id="lat" class="control" placeholder="lat"><input id="lng" class="control" placeholder="lng"><button id="btnUseLocation" class="btn">Usar ubicación</button></div>
+        <input id="rgEsp" class="control" placeholder="Especialidad">
+        <div class="row">
+          <input id="rgNom" class="control" placeholder="Nombres">
+          <input id="rgApe" class="control" placeholder="Apellidos">
         </div>
-        <div class="col" style="grid-column:1 / -1"><label>Descripción</label><textarea id="descripcion" class="control" rows="3" placeholder="Detallar lo ocurrido…"></textarea></div>
+        <input id="rgEmail" class="control" placeholder="Email">
+        <input id="rgPass" class="control" placeholder="Contraseña" type="password">
+        <div class="foot"><button class="btn btn-primary" id="btnCrear">Crear cuenta</button></div>
       </div>
-      <div class="right" style="margin-top:8px"><button id="btnSend" class="btn">Enviar</button></div>
-    </div>
-
-    <div class="card" style="grid-column:1 / -1">
-      <div class="row" style="justify-content:space-between;align-items:center"><h3>Alertas (10 más recientes)</h3></div>
-      <div class="table-wrap">
-        <table><thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Tipo</th><th>Usuario</th><th>Ubicación</th><th>Descripción</th></tr></thead><tbody id="listLatest"></tbody></table>
+      <div>
+        <h4 style="margin:.25rem 0">Iniciar sesión</h4>
+        <input id="lgEmail" class="control" placeholder="Email" value="admin@cie297.mil">
+        <input id="lgPass" class="control" placeholder="Contraseña" type="password" value="Admin123!">
+        <div class="foot">
+          <button class="btn btn-primary" id="btnEntrar">Entrar</button>
+          <button class="btn btn-ghost" id="btnCloseLogin">Cerrar</button>
+        </div>
+        <small style="opacity:.7">Primero crea una cuenta o pulsa “Iniciar sesión”. El contenido del sistema se mostrará después.</small>
       </div>
-    </div>
-  </section>
-
-  <section class="grid g-2 hidden" data-view="admin">
-    <div class="card">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h3>Alertas (10 más recientes)</h3>
-        <div class="row" style="gap:8px"><span class="badge">10 más recientes</span><button id="btnVerTodas" class="btn btn-secondary">Ver todas</button></div>
-      </div>
-      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Tipo</th><th>Usuario</th><th>Ubicación</th><th>Descripción</th></tr></thead><tbody id="adminLatest"></tbody></table></div>
-      <div id="panelTodas" class="hidden" style="margin-top:10px"></div>
-    </div>
-    <aside class="card"><h3>Órganos de búsqueda</h3><div class="muted">Claves IEC-SAT (simulado)</div></aside>
-  </section>
-
-</div>
-
-<div id="loginModal" class="modal">
-  <div class="box">
-    <div class="title">Iniciar sesión</div>
-    <div class="col" style="gap:8px">
-      <input id="loginEmail" class="control" placeholder="email">
-      <input id="loginPass" type="password" class="control" placeholder="contraseña">
-      <div class="right" style="gap:8px"><button id="btnLogin" class="btn">Entrar</button><button id="btnCloseLogin" class="btn btn-secondary">Cerrar</button></div>
     </div>
   </div>
 </div>
+
+<!-- MODAL GENERICO -->
+<div class="modal" id="modal">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+/* ======= STATE ======= */
+const state = {
+  logged:false, admin:false, user:null,
+  seqId: 10000,
+  alerts: [],
+  access: [],
+  blocked: {}
+};
+
+const CALLSIGNS = ["ZEUS","ARIES","VIRGO","SAGITARIO","LIBRA","CAPRICORNIO","GEMINIS","ESCORPIO","TAURO","CANCER","LEO","PISCIS"];
+const TITULOS = ["ACTUALIZACIÓN DE POSICIÓN","INTERFERENCIA RF","MOVIMIENTO ANÓMALO","GEOCERCA VIOLADA","OBSERVACIÓN"];
+const NIVELES = ["BAJA","MEDIA","ALTA"];
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const fmtDT = d => new Intl.DateTimeFormat("es-BO",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(d);
+function badgeNivel(n){ const cls = n==="ALTA"?"chip chip-alta":(n==="MEDIA"?"chip chip-media":"chip chip-baja"); return `<span class="${cls}">${n}</span>`; }
+
+function renderAppVisible(){ $("#app").style.display = "block"; $("#btnOpenLogin").style.display="none"; $("#btnLogout").style.display=""; }
+function renderAlerts(){
+  const col = $("#alertsCol");
+  col.innerHTML = state.alerts.slice(-50).reverse().map(a=>`
+    <div class="alert">
+      <div class="top">
+        ${badgeNivel(a.nivel)} <small>${fmtDT(new Date(a.ts))}</small>
+        <span class="badge" style="margin-left:auto">${a.agente}</span>
+      </div>
+      <div class="title">${a.titulo}</div>
+      <small>Lat/Lng: ${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}</small>
+    </div>`).join("");
+  const tbody = $("#tablaRecientes tbody");
+  const arr = state.alerts.slice(-10).reverse();
+  tbody.innerHTML = arr.map(a=>`<tr><td>${a.id}</td><td>${fmtDT(new Date(a.ts))}</td><td>${a.nivel}</td><td>${a.titulo}</td><td>${a.agente}</td></tr>`).join("");
+}
+
+const mLogin = $("#mLogin");
+$("#btnOpenLogin").onclick=()=>mLogin.classList.add("open");
+$("#btnCloseLogin").onclick=()=>mLogin.classList.remove("open");
+
+const modal = $("#modal"), sheet=$("#sheet");
+function openSheet(html){ sheet.innerHTML=html; modal.classList.add("open"); }
+function closeSheet(){ modal.classList.remove("open"); sheet.innerHTML=""; }
+modal.addEventListener("click", e=>{ if(e.target===modal) closeSheet(); });
+
+function addAccess(email){ state.access.push({ts:Date.now(), email, blocked: !!state.blocked[email]}); }
+$("#btnEntrar").onclick=()=>{
+  const email = $("#lgEmail").value.trim();
+  const pass  = $("#lgPass").value.trim();
+  if(state.blocked[email]){ alert("Tu acceso está bloqueado."); return; }
+  if(email==="admin@cie297.mil" && pass==="Admin123!"){
+    state.logged = true; state.admin = true; state.user = {email};
+    addAccess(email); mLogin.classList.remove("open"); renderAppVisible(); return;
+  }
+  if(!email || !pass){ alert("Completa email y contraseña"); return; }
+  state.logged=true; state.admin=false; state.user={email};
+  addAccess(email); mLogin.classList.remove("open"); renderAppVisible();
+};
+$("#btnCrear").onclick=()=>{ const email=$("#rgEmail").value.trim(); if(!email){ alert("Email requerido"); return; } alert("Cuenta creada: "+email+". Ahora pulsa Iniciar sesión."); };
+$("#btnLogout").onclick=()=>{ location.reload(); };
+
+$("#btnUbic").onclick=()=>{
+  if(!navigator.geolocation){ alert("Sin geolocalización"); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $("#rptLat").value = pos.coords.latitude.toFixed(6);
+    $("#rptLng").value = pos.coords.longitude.toFixed(6);
+  },()=>alert("No se pudo obtener ubicación"));
+};
+$("#btnEnviar").onclick=()=>{
+  if(!state.logged){ alert("Primero inicia sesión"); return; }
+  const nivel=$("#rptNivel").value, msg=$("#rptMsg").value;
+  const lat=parseFloat($("#rptLat").value||(-16.5+Math.random())); 
+  const lng=parseFloat($("#rptLng").value||(-68.1+Math.random()));
+  const agente=$("#ddLlamada").value;
+  const id = ++state.seqId;
+  const titulo = (["PINTURA","INTERFERENCIA","MOVIMIENTO","ACTUALIZACIÓN","GEO CERCA"].find(k=>msg.includes(k))||"INCIDENTE").replace("GEO CERCA","GEOCERCA")+" "+(msg.includes("PINTURA")?"DE COLOR":"");
+  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng});
+  renderAlerts();
+  alert("Reporte registrado.");
+};
+
+function pushSim(){
+  if(!state.logged) return;
+  const id=++state.seqId;
+  const nivel=NIVELES[Math.floor(Math.random()*3)];
+  const titulo=TITULOS[Math.floor(Math.random()*TITULOS.length)];
+  const agente=CALLSIGNS[Math.floor(Math.random()*CALLSIGNS.length)];
+  const lat=-16.5+(Math.random()*.6), lng=-68.2+(Math.random()*.6);
+  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng});
+  if(state.alerts.length>500) state.alerts.splice(0, state.alerts.length-500);
+  renderAlerts();
+}
+setInterval(pushSim, 5000);
+
+$("#btnVerTodas").onclick=()=>{
+  const porDia = {};
+  state.alerts.forEach(a=>{ const d = new Date(a.ts).toISOString().slice(0,10); (porDia[d]||(porDia[d]=[])).push(a); });
+  const html = `
+    <h3>Alertas por día</h3>
+    <div class="grid">
+      ${Object.keys(porDia).sort().reverse().map(d=>`
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <strong>${d}</strong><span class="badge">${porDia[d].length} eventos</span>
+          </div>
+          <table style="margin-top:6px">
+            <thead><tr><th>ID</th><th>Fecha y hora</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
+            <tbody>
+              ${porDia[d].slice().reverse().map(a=>`
+                <tr><td>${a.id}</td><td>${fmtDT(new Date(a.ts))}</td><td>${a.nivel}</td><td>${a.titulo}</td><td>${a.agente}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`).join("")}
+    </div>
+    <div class="foot"><button class="btn" onclick="document.querySelector('#modal').classList.remove('open')">Cerrar</button></div>`;
+  openSheet(html);
+};
+
+$("#btnAccesos").onclick=()=>{
+  const html=`
+    <h3>Accesos</h3>
+    <table>
+      <thead><tr><th>Fecha y hora</th><th>Email</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>
+      ${state.access.slice().reverse().map(x=>`
+        <tr>
+          <td>${fmtDT(new Date(x.ts))}</td>
+          <td>${x.email||"-"}</td>
+          <td>${state.blocked[x.email]?"BLOQUEADO":"OK"}</td>
+          <td>
+            <button class="btn ${state.blocked[x.email]?'':'btn-danger'}" 
+              onclick="(function(email){ 
+                state.blocked[email]=!state.blocked[email]; 
+                document.querySelector('#btnAccesos').click(); 
+              })('${x.email||""}')">${state.blocked[x.email]?"Desbloquear":"Bloquear"}</button>
+          </td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+    <div class="foot"><button class="btn" onclick="document.querySelector('#modal').classList.remove('open')">Cerrar</button></div>`;
+  openSheet(html);
+};
+
+$("#btnExportar").onclick=()=>{
+  if(!state.alerts.length){ alert("Sin datos"); return; }
+  const rows = state.alerts.slice(-50).map(a=>`
+    <tr>
+      <td>${a.id}</td>
+      <td>${fmtDT(new Date(a.ts))}</td>
+      <td>${a.nivel}</td>
+      <td>${a.titulo}</td>
+      <td>${a.agente}</td>
+    </tr>`).join("");
+  const html = `
+  <!doctype html><html><head><meta charset="utf-8">
+  <title>Reporte de Alertas</title>
+  <style>
+    body{font:14px Arial;color:#111;margin:36px}
+    h2{margin:0 0 6px 0}
+    .head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .head img{width:56px;height:56px;object-fit:contain}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border:1px solid #c9d0e0;padding:6px 8px;text-align:left}
+    th{background:#1f5dab;color:#fff}
+    tfoot td{border:none;padding-top:10px;font-size:12px;color:#333}
+  </style></head><body>
+    <div class="head">
+      <img src="assets/logo.png" alt="Logo" />
+      <div>
+        <h2>CIE-297 – Reporte de Alertas</h2>
+        <div>${fmtDT(new Date())}</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Fecha y hora</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <tfoot><tr><td> </td></tr><tr><td>Generado por el sistema académico (demo).</td></tr></tfoot>
+  </body></html>`;
+  const w = window.open("","_blank");
+  w.document.write(html); w.document.close(); w.focus(); w.print();
+};
+
+mLogin.classList.add("open");
+</script>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script>
+(function(){
+  let map;
+  function initMap(){
+    if (map || !document.getElementById('map')) return;
+    const cont = document.getElementById('map');
+    cont.innerHTML = '';
+    cont.style.borderStyle = 'solid';
+    map = L.map('map', { zoomControl: true }).setView([-16.5, -68.15], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    setTimeout(()=> map.invalidateSize(), 300);
+  }
+  document.addEventListener('DOMContentLoaded', initMap);
+  const _render = window.renderAppVisible;
+  if (typeof _render === 'function') {
+    window.renderAppVisible = function(){
+      _render();
+      initMap();
+      setTimeout(()=> { if (map) map.invalidateSize(); }, 50);
+    };
+  }
+  const geoBtn = document.getElementById('btnUbic');
+  if (geoBtn) {
+    geoBtn.addEventListener('click', () => {
+      if (!navigator.geolocation || !map) return;
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const { latitude, longitude } = pos.coords;
+        map.setView([latitude, longitude], 14);
+        L.marker([latitude, longitude]).addTo(map);
+      }, ()=>{});
+    });
+  }
+})();
+</script>
 </body>
 </html>
