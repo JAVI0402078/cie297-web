@@ -24,6 +24,8 @@ html,body{height:100%}
 body{margin:0;font:14px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:var(--bg)}
 a{color:#8ab4ff;text-decoration:none}
 .container{max-width:1280px;margin:0 auto;padding:16px}
+
+/* Barra superior minimal antes de login */
 .appbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#0b1424;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
 .brand{display:flex;gap:.75rem;align-items:center;font-weight:700;font-size:18px}
 .brand img{width:32px;height:32px;border-radius:8px}
@@ -33,6 +35,7 @@ a{color:#8ab4ff;text-decoration:none}
 .btn-danger{background:#2b1020;border-color:#ff6b6b;color:#ff9aa9}
 .btn-ghost{background:transparent;border-color:var(--line)}
 .btn-primary{background:#1e3a8a;border-color:#3256c7;color:#e6edff}
+
 .grid{display:grid;gap:16px}
 .g2{grid-template-columns:2fr 1fr}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
@@ -46,30 +49,37 @@ th{color:var(--muted);font-size:.9rem}
 td{color:#dbe8ff}
 .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .badge-dot{width:8px;height:8px;border-radius:99px;background:#6aa0ff}
+
 /* Chips */
 .chips{display:flex;gap:.5rem;flex-wrap:wrap}
 .chip{display:inline-block;padding:.35rem .65rem;border-radius:999px;font-weight:700;border:1px solid var(--line);letter-spacing:.2px;background:var(--chip);color:#cfe2ff}
 .chip-media{background:#3a3000;color:var(--warn);border-color:rgba(255,200,0,.25)}
 .chip-baja{background:#07280f;color:#a0f3b8;border-color:rgba(34,197,94,.25)}
 .chip-alta{background:#2a0c0f;color:#ff8fa0;border-color:rgba(239,68,68,.25)}
-/* Right alerts list */
+
+/* Lista derecha */
 .alerts-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding-right:6px}
 .alert{border:1px solid var(--line);background:#0f1a2e;border-radius:12px;padding:.7rem .8rem}
 .alert .top{display:flex;align-items:center;gap:.6rem}
 .alert .title{font-weight:700;margin-top:.35rem}
 .alert small{color:var(--muted)}
+
 /* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:5000} /* <- aumentado */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:5000}
 .modal.open{display:flex}
-.sheet{width:min(980px,92vw);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;z-index:6000;position:relative} /* <- z-index alto */
-/* Login sheet smaller */
+.sheet{width:min(980px,92vw);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;z-index:6000;position:relative}
 .sheet-sm{width:min(820px,92vw)}
-/* Sticky right column tools */
-.tools .btn{width:100%;justify-content:center}
+
 /* Footer */
 footer{color:#a2b7dc;text-align:center;padding:24px 0;opacity:.85}
-/* Hide app before auth */
+
+/* Ocultar app hasta iniciar sesión */
 #app{display:none}
+
+/* Pantalla de bienvenida (solo imagen 1 + botón Iniciar) */
+#landing{display:flex;align-items:center;justify-content:center;padding:34px}
+.landing-box{display:flex;gap:18px;align-items:flex-start}
+.landing-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;width:min(720px,92vw)}
 </style>
 </head>
 <body>
@@ -84,120 +94,152 @@ footer{color:#a2b7dc;text-align:center;padding:24px 0;opacity:.85}
   </div>
 </header>
 
-<main class="container">
-  <div id="app">
-    <div class="grid g2">
-      <section class="card">
-        <h3>Área Operativa</h3>
-        <div id="map" class="card" style="height:360px;display:flex;align-items:center;justify-content:center;color:#7c99c9;border-style:dashed">
-          <small>Mapa (tu integración existente)</small>
-        </div>
-
-        <div class="chips" style="margin-top:10px">
-          <span class="chip chip-baja"><span class="badge-dot" style="background:#22c55e"></span> BAJA</span>
-          <span class="chip chip-media"><span class="badge-dot" style="background:#f59e0b"></span> MEDIA</span>
-          <span class="chip chip-alta"><span class="badge-dot" style="background:#ef4444"></span> ALTA</span>
-        </div>
-
-        <div class="card" style="margin-top:14px;max-width:560px">
-          <h3>Misiones / Reportes rápidos</h3>
+<!-- LANDING: solo “Imagen 1” + botón Iniciar (tu requisito 1) -->
+<main class="container" id="landing">
+  <div class="landing-box">
+    <div class="landing-card">
+      <h3>Acceso</h3>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <h4 style="margin:.25rem 0">Registro</h4>
+          <div style="margin:.5rem 0">
+            <small style="color:var(--muted)">Grado</small>
+            <select class="control select" disabled>
+              <option>SLDO</option><option>SGT</option><option>SOF</option><option>SBTTE</option><option>TTE</option><option>CAP</option>
+              <option>MY</option><option>TCNL</option><option>CNL</option><option>GRAL</option>
+            </select>
+          </div>
+          <input class="control" placeholder="Especialidad" disabled>
           <div class="row">
-            <div style="flex:1">
-              <small style="color:var(--muted)">Tipo</small>
-              <select id="rptTipo" class="control select">
-                <option>Operativo en zona</option>
-                <option>Incautación de autos</option>
-                <option>Rebasado</option>
-              </select>
-            </div>
-            <div style="width:160px">
-              <small style="color:var(--muted)">Nivel</small>
-              <select id="rptNivel" class="control select">
-                <option>BAJA</option><option>MEDIA</option><option>ALTA</option>
-              </select>
-            </div>
-            <div>
-              <small style="color:var(--muted)">Ubicación</small><br/>
-              <button class="btn" id="btnUbic">Usar ubicación</button>
-            </div>
+            <input class="control" placeholder="Nombres" disabled>
+            <input class="control" placeholder="Apellidos" disabled>
           </div>
-          <div class="row" style="margin-top:8px">
-            <div style="flex:1">
-              <small style="color:var(--muted)">Mensaje</small>
-              <select id="rptMsg" class="control select">
-                <option>PETA</option><option>LAMBO</option><option>TRICICLO</option><option>PATINETA</option>
-                <option>FRUTAS</option><option>MOTOBOMBA</option><option>CUCHARA</option><option>TENEDOR</option>
-                <option>CHISGUETE</option>
-                <option>PINTURA ROJA</option><option>PINTURA NARANJA</option><option>PINTURA AZUL</option>
-                <option>PINTURA VERDE</option><option>PINTURA AMARILLA</option><option>PINTURA CAFE</option>
-                <option>YENAS</option><option>LOBOS</option><option>LIEBRES</option><option>JUGANDO</option>
-                <option>RIO PILCOMAYO</option><option>LAGUNA ESCOBAR</option><option>MALLASA</option><option>CIELO NUBLADO</option>
-                <option>HOTEL RADISSON</option><option>HERRADURA</option><option>FEDERAL</option><option>CAIMAN</option><option>LAGARTOS</option>
-              </select>
-            </div>
-            <div style="width:160px">
-              <small style="color:var(--muted)">Lat</small>
-              <input id="rptLat" class="control" placeholder="lat">
-            </div>
-            <div style="width:160px">
-              <small style="color:var(--muted)">Lng</small>
-              <input id="rptLng" class="control" placeholder="lng">
-            </div>
-          </div>
-          <div style="margin-top:8px">
-            <small style="color:var(--muted)">Descripción</small>
-            <textarea id="rptDesc" class="control" rows="3" placeholder="Detallar lo ocurrido..."></textarea>
-          </div>
-          <div style="text-align:right;margin-top:8px">
-            <button class="btn btn-primary" id="btnEnviar">Enviar</button>
-          </div>
+          <input class="control" placeholder="Email" disabled>
+          <input class="control" placeholder="Contraseña" type="password" disabled>
+          <div class="foot"><button class="btn" disabled>Crear cuenta</button></div>
         </div>
-      </section>
-
-      <aside class="card">
-        <h3>Órganos de búsqueda</h3>
-        <div class="row" style="margin-bottom:6px">
-          <div class="badge"><strong style="opacity:.85">Código indicativo del lugar</strong></div>
-          <select id="ddLugar" class="control select">
-            <option>HAWAI</option><option>CUBA</option><option>BEIRUT</option><option>LOMAS</option>
-          </select>
+        <div style="display:flex;align-items:flex-start;justify-content:center;padding-top:28px">
+          <button class="btn btn-primary" id="btnOpenLogin_2">Iniciar sesión</button>
         </div>
-        <div class="row" style="margin-bottom:6px">
-          <div class="badge"><strong style="opacity:.85">Código indicativo de canales</strong></div>
-          <select id="ddCanal" class="control select">
-            <option>BLANCO</option><option>ROJO</option><option>AZUL</option><option>AMARILLO</option><option>VERDE</option>
-            <option>ROSADO</option><option>GUINDO</option><option>CARMESI</option><option>NEGRO</option><option>KAKI</option>
-            <option>MARRON</option><option>TURQUESA</option><option>CELESTE</option><option>NARANJA</option><option>PURPURA</option><option>GRIS</option>
-          </select>
-        </div>
-        <div class="row">
-          <div class="badge"><strong style="opacity:.85">Código indicativo de llamadas</strong></div>
-          <select id="ddLlamada" class="control select">
-            <option>ZEUS</option><option>ARIES</option><option>VIRGO</option><option>SAGITARIO</option>
-            <option>LIBRA</option><option>CAPRICORNIO</option><option>GEMINIS</option><option>ESCORPIO</option>
-            <option>TAURO</option><option>CANCER</option><option>LEO</option><option>PISCIS</option>
-          </select>
-        </div>
-
-        <div class="row" style="margin-top:14px">
-          <button class="btn" id="btnVerTodas" style="flex:1">Ver todas</button>
-          <button class="btn" id="btnExportar" style="flex:1">Exportar PDF</button>
-          <button class="btn" id="btnAccesos" style="flex:1">Accesos</button>
-        </div>
-
-        <h3 style="margin-top:14px">Alertas</h3>
-        <div class="alerts-list" id="alertsCol"></div>
-      </aside>
+      </div>
+      <small style="opacity:.7">Primero pulsa “Iniciar sesión”. Luego verás el sistema (mapa, reportes, etc.).</small>
     </div>
-
-    <section class="card" style="margin-top:14px">
-      <h3>Alertas (10 más recientes)</h3>
-      <table id="tablaRecientes">
-        <thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
   </div>
+</main>
+
+<!-- APP (se muestra tras login) -->
+<main class="container" id="app">
+  <div class="grid g2">
+    <section class="card">
+      <h3>Área Operativa</h3>
+      <div id="map" class="card" style="height:360px;display:flex;align-items:center;justify-content:center;color:#7c99c9;border-style:dashed">
+        <small>Mapa (Leaflet)</small>
+      </div>
+
+      <div class="chips" style="margin-top:10px">
+        <span class="chip chip-baja"><span class="badge-dot" style="background:#22c55e"></span> BAJA</span>
+        <span class="chip chip-media"><span class="badge-dot" style="background:#f59e0b"></span> MEDIA</span>
+        <span class="chip chip-alta"><span class="badge-dot" style="background:#ef4444"></span> ALTA</span>
+      </div>
+
+      <div class="card" style="margin-top:14px;max-width:560px">
+        <h3>Misiones / Reportes rápidos</h3>
+        <div class="row">
+          <div style="flex:1">
+            <small style="color:var(--muted)">Tipo</small>
+            <select id="rptTipo" class="control select">
+              <option>Operativo en zona</option>
+              <option>Incautación de autos</option>
+              <option>Rebasado</option>
+            </select>
+          </div>
+          <div style="width:160px">
+            <small style="color:var(--muted)">Nivel</small>
+            <select id="rptNivel" class="control select">
+              <option>BAJA</option><option>MEDIA</option><option>ALTA</option>
+            </select>
+          </div>
+          <div>
+            <small style="color:var(--muted)">Ubicación</small><br/>
+            <button class="btn" id="btnUbic">Usar ubicación</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1">
+            <small style="color:var(--muted)">Mensaje</small>
+            <select id="rptMsg" class="control select">
+              <option>PETA</option><option>LAMBO</option><option>TRICICLO</option><option>PATINETA</option>
+              <option>FRUTAS</option><option>MOTOBOMBA</option><option>CUCHARA</option><option>TENEDOR</option>
+              <option>CHISGUETE</option>
+              <option>PINTURA ROJA</option><option>PINTURA NARANJA</option><option>PINTURA AZUL</option>
+              <option>PINTURA VERDE</option><option>PINTURA AMARILLA</option><option>PINTURA CAFE</option>
+              <option>YENAS</option><option>LOBOS</option><option>LIEBRES</option><option>JUGANDO</option>
+              <option>RIO PILCOMAYO</option><option>LAGUNA ESCOBAR</option><option>MALLASA</option><option>CIELO NUBLADO</option>
+              <option>HOTEL RADISSON</option><option>HERRADURA</option><option>FEDERAL</option><option>CAIMAN</option><option>LAGARTOS</option>
+            </select>
+          </div>
+          <div style="width:160px">
+            <small style="color:var(--muted)">Lat</small>
+            <input id="rptLat" class="control" placeholder="lat">
+          </div>
+          <div style="width:160px">
+            <small style="color:var(--muted)">Lng</small>
+            <input id="rptLng" class="control" placeholder="lng">
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <small style="color:var(--muted)">Descripción</small>
+          <textarea id="rptDesc" class="control" rows="3" placeholder="Detallar lo ocurrido..."></textarea>
+        </div>
+        <div style="text-align:right;margin-top:8px">
+          <button class="btn btn-primary" id="btnEnviar">Enviar</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3>Órganos de búsqueda</h3>
+      <div class="row" style="margin-bottom:6px">
+        <div class="badge"><strong style="opacity:.85">Código indicativo del lugar</strong></div>
+        <select id="ddLugar" class="control select">
+          <option>HAWAI</option><option>CUBA</option><option>BEIRUT</option><option>LOMAS</option>
+        </select>
+      </div>
+      <div class="row" style="margin-bottom:6px">
+        <div class="badge"><strong style="opacity:.85)">Código indicativo de canales</strong></div>
+        <select id="ddCanal" class="control select">
+          <option>BLANCO</option><option>ROJO</option><option>AZUL</option><option>AMARILLO</option><option>VERDE</option>
+          <option>ROSADO</option><option>GUINDO</option><option>CARMESI</option><option>NEGRO</option><option>KAKI</option>
+          <option>MARRON</option><option>TURQUESA</option><option>CELESTE</option><option>NARANJA</option><option>PURPURA</option><option>GRIS</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="badge"><strong style="opacity:.85)">Código indicativo de llamadas</strong></div>
+        <select id="ddLlamada" class="control select">
+          <option>ZEUS</option><option>ARIES</option><option>VIRGO</option><option>SAGITARIO</option>
+          <option>LIBRA</option><option>CAPRICORNIO</option><option>GEMINIS</option><option>ESCORPIO</option>
+          <option>TAURO</option><option>CANCER</option><option>LEO</option><option>PISCIS</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="btnVerTodas" style="flex:1">Ver todas</button>
+        <button class="btn" id="btnExportar" style="flex:1">Exportar PDF</button>
+        <button class="btn" id="btnAccesos" style="flex:1">Accesos</button>
+      </div>
+
+      <h3 style="margin-top:14px">Alertas</h3>
+      <div class="alerts-list" id="alertsCol"></div>
+    </aside>
+  </div>
+
+  <section class="card" style="margin-top:14px">
+    <h3>Alertas (10 más recientes)</h3>
+    <table id="tablaRecientes">
+      <thead><tr><th>ID</th><th>Fecha</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 </main>
 
 <footer>© CIE-297 — Prototipo académico</footer>
@@ -233,7 +275,7 @@ footer{color:#a2b7dc;text-align:center;padding:24px 0;opacity:.85}
           <button class="btn btn-primary" id="btnEntrar">Entrar</button>
           <button class="btn btn-ghost" id="btnCloseLogin">Cerrar</button>
         </div>
-        <small style="opacity:.7">Primero crea una cuenta o pulsa “Iniciar sesión”. El contenido del sistema se mostrará después.</small>
+        <small style="opacity:.7">Crea una cuenta o ingresa como admin. Luego verás el sistema.</small>
       </div>
     </div>
   </div>
@@ -253,7 +295,6 @@ const state = {
   access: [],
   blocked: {}
 };
-
 const CALLSIGNS = ["ZEUS","ARIES","VIRGO","SAGITARIO","LIBRA","CAPRICORNIO","GEMINIS","ESCORPIO","TAURO","CANCER","LEO","PISCIS"];
 const TITULOS = ["ACTUALIZACIÓN DE POSICIÓN","INTERFERENCIA RF","MOVIMIENTO ANÓMALO","GEOCERCA VIOLADA","OBSERVACIÓN"];
 const NIVELES = ["BAJA","MEDIA","ALTA"];
@@ -263,7 +304,12 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
 const fmtDT = d => new Intl.DateTimeFormat("es-BO",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(d);
 function badgeNivel(n){ const cls = n==="ALTA"?"chip chip-alta":(n==="MEDIA"?"chip chip-media":"chip chip-baja"); return `<span class="${cls}">${n}</span>`; }
 
-function renderAppVisible(){ $("#app").style.display = "block"; $("#btnOpenLogin").style.display="none"; $("#btnLogout").style.display=""; }
+function renderAppVisible(){
+  $("#landing").style.display="none";
+  $("#app").style.display = "block";
+  $("#btnOpenLogin").style.display="none";
+  $("#btnLogout").style.display="";
+}
 function renderAlerts(){
   const col = $("#alertsCol");
   col.innerHTML = state.alerts.slice(-50).reverse().map(a=>`
@@ -273,15 +319,17 @@ function renderAlerts(){
         <span class="badge" style="margin-left:auto">${a.agente}</span>
       </div>
       <div class="title">${a.titulo}</div>
-      <small>Lat/Lng: ${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}</small>
+      <small>Lat/Lng: ${a.lat.toFixed?.(4) ?? a.lat}, ${a.lng.toFixed?.(4) ?? a.lng}</small>
     </div>`).join("");
   const tbody = $("#tablaRecientes tbody");
   const arr = state.alerts.slice(-10).reverse();
   tbody.innerHTML = arr.map(a=>`<tr><td>${a.id}</td><td>${fmtDT(new Date(a.ts))}</td><td>${a.nivel}</td><td>${a.titulo}</td><td>${a.agente}</td></tr>`).join("");
 }
 
+/* ==== Landing + Modales ==== */
 const mLogin = $("#mLogin");
 $("#btnOpenLogin").onclick=()=>mLogin.classList.add("open");
+$("#btnOpenLogin_2").onclick=()=>mLogin.classList.add("open");
 $("#btnCloseLogin").onclick=()=>mLogin.classList.remove("open");
 
 const modal = $("#modal"), sheet=$("#sheet");
@@ -289,22 +337,39 @@ function openSheet(html){ sheet.innerHTML=html; modal.classList.add("open"); }
 function closeSheet(){ modal.classList.remove("open"); sheet.innerHTML=""; }
 modal.addEventListener("click", e=>{ if(e.target===modal) closeSheet(); });
 
-function addAccess(email){ state.access.push({ts:Date.now(), email, blocked: !!state.blocked[email]}); }
+/* Accesos: registramos TODO intento y su resultado */
+function addAccess(email, result){ state.access.push({ts:Date.now(), email, result}); }
+
 $("#btnEntrar").onclick=()=>{
   const email = $("#lgEmail").value.trim();
   const pass  = $("#lgPass").value.trim();
-  if(state.blocked[email]){ alert("Tu acceso está bloqueado."); return; }
+
+  if(state.blocked[email]){ addAccess(email,"BLOQUEADO"); alert("Tu acceso está bloqueado."); return; }
+  if(!email || !pass){ addAccess(email||"(vacío)","RECHAZADO"); alert("Completa email y contraseña"); return; }
+
   if(email==="admin@cie297.mil" && pass==="Admin123!"){
     state.logged = true; state.admin = true; state.user = {email};
-    addAccess(email); mLogin.classList.remove("open"); renderAppVisible(); return;
+    addAccess(email,"OK");
+    mLogin.classList.remove("open");
+    renderAppVisible();
+    return;
   }
-  if(!email || !pass){ alert("Completa email y contraseña"); return; }
+  // Usuario normal
   state.logged=true; state.admin=false; state.user={email};
-  addAccess(email); mLogin.classList.remove("open"); renderAppVisible();
+  addAccess(email,"OK");
+  mLogin.classList.remove("open");
+  renderAppVisible();
 };
-$("#btnCrear").onclick=()=>{ const email=$("#rgEmail").value.trim(); if(!email){ alert("Email requerido"); return; } alert("Cuenta creada: "+email+". Ahora pulsa Iniciar sesión."); };
+
+$("#btnCrear").onclick=()=>{
+  const email=$("#rgEmail").value.trim();
+  if(!email){ alert("Email requerido"); return; }
+  alert("Cuenta creada: "+email+". Ahora pulsa Iniciar sesión.");
+};
+
 $("#btnLogout").onclick=()=>{ location.reload(); };
 
+/* ====== Reportes ====== */
 $("#btnUbic").onclick=()=>{
   if(!navigator.geolocation){ alert("Sin geolocalización"); return; }
   navigator.geolocation.getCurrentPosition(pos=>{
@@ -312,19 +377,33 @@ $("#btnUbic").onclick=()=>{
     $("#rptLng").value = pos.coords.longitude.toFixed(6);
   },()=>alert("No se pudo obtener ubicación"));
 };
+
+function makeTitulo(msg){
+  if(msg.includes("PINTURA")) return "PINTURA DE COLOR";
+  if(msg.includes("INTERFERENCIA")) return "INTERFERENCIA RF";
+  if(msg.includes("GEOCERCA")||msg.includes("GEO")) return "GEOCERCA VIOLADA";
+  if(msg.includes("ACTUAL")) return "ACTUALIZACIÓN DE POSICIÓN";
+  return "INCIDENTE";
+}
+
 $("#btnEnviar").onclick=()=>{
   if(!state.logged){ alert("Primero inicia sesión"); return; }
-  const nivel=$("#rptNivel").value, msg=$("#rptMsg").value;
-  const lat=parseFloat($("#rptLat").value||(-16.5+Math.random())); 
-  const lng=parseFloat($("#rptLng").value||(-68.1+Math.random()));
+  const nivel=$("#rptNivel").value;
+  const msg=$("#rptMsg").value;
+  const lat = parseFloat($("#rptLat").value || (-16.5+Math.random()));
+  const lng = parseFloat($("#rptLng").value || (-68.1+Math.random()));
   const agente=$("#ddLlamada").value;
   const id = ++state.seqId;
-  const titulo = (["PINTURA","INTERFERENCIA","MOVIMIENTO","ACTUALIZACIÓN","GEO CERCA"].find(k=>msg.includes(k))||"INCIDENTE").replace("GEO CERCA","GEOCERCA")+" "+(msg.includes("PINTURA")?"DE COLOR":"");
-  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng});
+  const titulo = makeTitulo(msg);
+
+  // Añadir SIEMPRE al arreglo (aparece en recientes, Ver todas y PDF)
+  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng, source:"manual"});
+  if(state.alerts.length>500) state.alerts.splice(0, state.alerts.length-500);
   renderAlerts();
-  alert("Reporte registrado.");
+  alert("Reporte registrado y listado en Alertas/Ver todas/PDF.");
 };
 
+/* ====== Simulación periódica (solo cuando hay login) ====== */
 function pushSim(){
   if(!state.logged) return;
   const id=++state.seqId;
@@ -332,15 +411,19 @@ function pushSim(){
   const titulo=TITULOS[Math.floor(Math.random()*TITULOS.length)];
   const agente=CALLSIGNS[Math.floor(Math.random()*CALLSIGNS.length)];
   const lat=-16.5+(Math.random()*.6), lng=-68.2+(Math.random()*.6);
-  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng});
+  state.alerts.push({id, ts:Date.now(), nivel, titulo, agente, lat, lng, source:"sim"});
   if(state.alerts.length>500) state.alerts.splice(0, state.alerts.length-500);
   renderAlerts();
 }
 setInterval(pushSim, 5000);
 
+/* ====== Ver todas (agrupado por día) ====== */
 $("#btnVerTodas").onclick=()=>{
   const porDia = {};
-  state.alerts.forEach(a=>{ const d = new Date(a.ts).toISOString().slice(0,10); (porDia[d]||(porDia[d]=[])).push(a); });
+  state.alerts.forEach(a=>{
+    const d = new Date(a.ts).toISOString().slice(0,10);
+    (porDia[d]||(porDia[d]=[])).push(a);
+  });
   const html = `
     <h3>Alertas por día</h3>
     <div class="grid">
@@ -362,22 +445,23 @@ $("#btnVerTodas").onclick=()=>{
   openSheet(html);
 };
 
+/* ====== Accesos (muestra todos los intentos) ====== */
 $("#btnAccesos").onclick=()=>{
   const html=`
     <h3>Accesos</h3>
     <table>
-      <thead><tr><th>Fecha y hora</th><th>Email</th><th>Estado</th><th>Acción</th></tr></thead>
+      <thead><tr><th>Fecha y hora</th><th>Email</th><th>Resultado</th><th>Acción</th></tr></thead>
       <tbody>
       ${state.access.slice().reverse().map(x=>`
         <tr>
           <td>${fmtDT(new Date(x.ts))}</td>
           <td>${x.email||"-"}</td>
-          <td>${state.blocked[x.email]?"BLOQUEADO":"OK"}</td>
+          <td>${x.result || (state.blocked[x.email]?"BLOQUEADO":"OK")}</td>
           <td>
-            <button class="btn ${state.blocked[x.email]?'':'btn-danger'}" 
-              onclick="(function(email){ 
-                state.blocked[email]=!state.blocked[email]; 
-                document.querySelector('#btnAccesos').click(); 
+            <button class="btn ${state.blocked[x.email]?'':'btn-danger'}"
+              onclick="(function(email){
+                state.blocked[email]=!state.blocked[email];
+                document.querySelector('#btnAccesos').click();
               })('${x.email||""}')">${state.blocked[x.email]?"Desbloquear":"Bloquear"}</button>
           </td>
         </tr>`).join("")}
@@ -387,9 +471,10 @@ $("#btnAccesos").onclick=()=>{
   openSheet(html);
 };
 
+/* ====== Exportar PDF (incluye manuales y simuladas) ====== */
 $("#btnExportar").onclick=()=>{
   if(!state.alerts.length){ alert("Sin datos"); return; }
-  const rows = state.alerts.slice(-50).map(a=>`
+  const rows = state.alerts.slice(-100).map(a=>`
     <tr>
       <td>${a.id}</td>
       <td>${fmtDT(new Date(a.ts))}</td>
@@ -421,13 +506,14 @@ $("#btnExportar").onclick=()=>{
       <thead><tr><th>ID</th><th>Fecha y hora</th><th>Nivel</th><th>Título</th><th>Agente</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <tfoot><tr><td> </td></tr><tr><td>Generado por el sistema académico (demo).</td></tr></tfoot>
+    <tfoot><tr><td>Generado automáticamente (últimas 100 alertas).</td></tr></tfoot>
   </body></html>`;
   const w = window.open("","_blank");
   w.document.write(html); w.document.close(); w.focus(); w.print();
 };
 
-mLogin.classList.add("open");
+/* Abrir modal al pulsar Iniciar (pantalla inicial) */
+mLogin.classList.remove("open"); // no autoabrir
 </script>
 
 <script
@@ -450,7 +536,8 @@ mLogin.classList.add("open");
     }).addTo(map);
     setTimeout(()=> map.invalidateSize(), 300);
   }
-  document.addEventListener('DOMContentLoaded', initMap);
+
+  // Hook cuando se muestre la app
   const _render = window.renderAppVisible;
   if (typeof _render === 'function') {
     window.renderAppVisible = function(){
@@ -459,6 +546,8 @@ mLogin.classList.add("open");
       setTimeout(()=> { if (map) map.invalidateSize(); }, 50);
     };
   }
+
+  // Centrar al usar ubicación y marcar pin
   const geoBtn = document.getElementById('btnUbic');
   if (geoBtn) {
     geoBtn.addEventListener('click', () => {
@@ -470,7 +559,8 @@ mLogin.classList.add("open");
       }, ()=>{});
     });
   }
-})();
+})()
 </script>
 </body>
 </html>
+
